@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN"
+    "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>net.pcable.onair</string>
+
+    <key>ServiceDescription</key>
+    <string>OnAir changes a light if you're on a video call</string>
+
+    <key>StandardErrorPath</key>
+    <string>/tmp/onair-error.log</string>
+
+    <key>StandardOutPath</key>
+    <string>/tmp/onair-info.log</string>
+
+    <key>ProgramArguments</key>
+    <array>             
+        <string>/usr/local/bin/onair</string>
+        <string>run</string>
+    </array>
+
+    <key>RunAtLoad</key>
+    <true/>
+</dict>
+</plist>

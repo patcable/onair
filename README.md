@@ -30,7 +30,7 @@ You can put your $GOPATH wherever you want. You'll likely want to toss those `ex
 
 This guide focuses on a Philips Hue system; if other lights become supported I'll figure out what to do with this guide.
 
-### Creating a Username on your Hue bridge
+### Setting Up the Hue Bridge
 Once you have the `onair` binary, you'll need to set OnAir up so that it can talk to the Hue bridge. To do this, run `onair hue init`, walk over to the Hue bridge and press the button. This authenticates OnAir to the Hue bridge. If successful, you should see this output:
 
 ```
@@ -47,7 +47,7 @@ Now, create a file at `$HOME/.onair.yml` with this in it:
 hueuid: wrheWt05IVRdftSh76Af8fAUcX0o4Olwi-YvNYIO
 ```
 
-### Figuring out your lighting situation
+### Configuring Your Lights
 Once the `hueuid` value is in place, you can run `onair hue lights` which will display information about the lights connected to the bridge. The output should look like:
 
 ```
@@ -86,6 +86,14 @@ At this point, you're ready to give it a go. Make sure that Micro Snitch is runn
 
 The lack of output is normal. Find an application that enables the microphone or camera, and watch your light change color! It should change color back to the inactive color once you close the application. This works across any application on macOS! It's very satisfying.
 
+## Start OnAir Automatically
+
+If `onair run` works well for you, you can make it run in the background automatically.
+
+First, symlink `/usr/local/bin/onair` to `$GOPATH/bin/onair`, then toss the launch agent plist in `~/Library/LaunchAgents/net.pcable.onair.plist`. You can find that plist file in this repository.
+
+Load the launch configuration with `launchctl load ~/Library/LaunchAgents/net.pcable.onair.plist` and it'll start immediately.
+
 ## Issues
 PRs are welcome! I'm happy to look at those as time allows. If you run into issues, opening an issue is the best way to get my attention, but it might be a while. I should probably add in better debug log support to make this a bit easier on myself. Coming soon :)
 
@@ -98,10 +106,10 @@ If you're interested in adding bits to OnAir this section will be helpful.
 * `watcher.go` has the main run function of the application. This is the part of the app that actually watches the log file you specify, configures the parser for that file, sets up the lighting options based on configured system and type, etc. 
 * `hue.go` has the functions specific to the hue lighting setup. Notably, a `hueConfig` struct that gets used in `watcher.go` to actually set stuff for the lights.
 
-### Adding a log parser
+### Adding a Log Parser
 If you want to add a parser, update `configureParser` with a new grok pattern (`gr.AddPattern`) and then update the switch statement in `configureParser` so that the run function knows to use that grok filter. You'll need to update the for loop in the run function as well since there are likely new field names that you may need to use.
 
-### Adding a lighting system
+### Adding a Lighting System
 If you'd like to add a different lighting system, you should check to see if it has a golang library first. If not, step one may be: write a library for your lighting system. Once that's done, to get that into OnAir, you'll need to:
 
 * Add some commands/subcommands to get information about your lights in `onair.go`. Config values should be named `SYSTEMthing` (ie. `lifxlight` if you were adding in lifx support)
@@ -111,4 +119,3 @@ If you'd like to add a different lighting system, you should check to see if it 
 ### Improvement Ideas
 * Probably better error handling or flow. Using logrus or having some sort of debug mode might be nice.
 * I built this for Micro Snitch because that's what I have, but extending it for [Oversight](https://objective-see.com/products/oversight.html) should be possible depending on the log format.
-* Write a launch agent definition for this so that it can load on user login. 
