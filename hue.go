@@ -19,6 +19,14 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
+type hueConfig struct {
+	Bridge     *huego.Bridge
+	Light      int
+	Brightness int
+	Active     []float32
+	Inactive   []float32
+}
+
 func initHue(c *cli.Context) {
 	if c.String("hueuid") != "" {
 		fmt.Printf("Seems like you already have a username set. Remove that variable from your config file if that isn't the case.\n")
@@ -88,7 +96,7 @@ func getHueLights(c *cli.Context) {
 	}
 }
 
-func setLights(bridge *huego.Bridge, light int, x float32, y float32, bri int) error {
+func setHueLights(bridge *huego.Bridge, light int, x float32, y float32, bri int) error {
 	_, err := bridge.GetLight(light)
 	if err != nil {
 		return err

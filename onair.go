@@ -22,26 +22,10 @@ func main() {
 		os.Exit(1)
 	}
 	// Some defaults.?
-	microSnitchLogFile := fmt.Sprintf("%s/Library/Logs/Micro Snitch.log", homeDir)
+	logFile := fmt.Sprintf("%s/Library/Logs/Micro Snitch.log", homeDir)
 	configFile := fmt.Sprintf("%s/.onair.yml", homeDir)
 
 	globalFlags := []cli.Flag{
-		altsrc.NewStringFlag(&cli.StringFlag{
-			Name:    "mslog",
-			Aliases: []string{"m"},
-			Usage:   "Path to the Micro Snitch Log File",
-			Value:   microSnitchLogFile,
-		}),
-		altsrc.NewStringFlag(&cli.StringFlag{
-			Name:    "hueuid",
-			Aliases: []string{"u"},
-			Usage:   "The username to use for the Hue bridge. Pulls from $HOME/.onair by default",
-		}),
-		altsrc.NewStringFlag(&cli.StringFlag{
-			Name:    "hueip",
-			Aliases: []string{"i"},
-			Usage:   "The IP of your Hue bridge - onair uses automatic discovery if not specified",
-		}),
 		&cli.StringFlag{
 			Name:  "config",
 			Usage: "Path to the config yaml file",
@@ -49,24 +33,70 @@ func main() {
 		},
 	}
 
+	hueFlags := []cli.Flag{
+		altsrc.NewStringFlag(&cli.StringFlag{
+			Name:    "hueuid",
+			Aliases: []string{"u"},
+			Usage:   "username for the Hue bridge",
+		}),
+		altsrc.NewStringFlag(&cli.StringFlag{
+			Name:    "hueip",
+			Aliases: []string{"i"},
+			Usage:   "ip address of the Hue bridge (automatic discovery if not specified)",
+		}),
+		&cli.StringFlag{
+			Name:   "config",
+			Usage:  "Path to the config yaml file",
+			Value:  configFile,
+			Hidden: true,
+		},
+	}
+
 	runFlags := []cli.Flag{
+		altsrc.NewStringFlag(&cli.StringFlag{
+			Name:    "system",
+			Aliases: []string{"s"},
+			Usage:   "which light system do you use (currently only supports hue)",
+			Value:   "hue",
+		}),
+		altsrc.NewStringFlag(&cli.StringFlag{
+			Name:    "logtype",
+			Aliases: []string{"t"},
+			Usage:   "type of log (currently only supports microsnitch)",
+			Value:   "microsnitch",
+		}),
+		altsrc.NewStringFlag(&cli.StringFlag{
+			Name:  "log",
+			Usage: "location of the log file that tracks device status",
+			Value: logFile,
+		}),
+		altsrc.NewStringFlag(&cli.StringFlag{
+			Name:    "hueuid",
+			Aliases: []string{"u"},
+			Usage:   "username for the Hue bridge",
+		}),
+		altsrc.NewStringFlag(&cli.StringFlag{
+			Name:    "hueip",
+			Aliases: []string{"i"},
+			Usage:   "ip address of the Hue bridge (automatic discovery if not specified)",
+		}),
 		altsrc.NewIntFlag(&cli.IntFlag{
-			Name:    "light",
+			Name:    "huelight",
 			Aliases: []string{"l"},
 			Usage:   "ID of the light you'll control",
 		}),
 		altsrc.NewIntFlag(&cli.IntFlag{
-			Name:    "brightness",
+			Name:    "huebrightness",
 			Aliases: []string{"b"},
 			Usage:   "Brightness (1-254)",
 			Value:   70,
 		}),
 		altsrc.NewStringFlag(&cli.StringFlag{
-			Name:  "active",
+			Name:  "hueactive",
 			Usage: "XY color value when video/audio is active",
 		}),
 		altsrc.NewStringFlag(&cli.StringFlag{
-			Name:  "inactive",
+			Name:  "hueinactive",
 			Usage: "XY color value when video/audio is inactive",
 		}),
 		&cli.StringFlag{
@@ -79,31 +109,39 @@ func main() {
 
 	app := &cli.App{
 		Name:   "onair",
-		Usage:  "monitors your audio/video devices and controls a Philips HUE light based on their status",
+		Usage:  "monitors your audio/video devices and controls a light based on their status",
 		Before: altsrc.InitInputSourceWithContext(globalFlags, altsrc.NewYamlSourceFromFlagFunc("config")),
 		Flags:  globalFlags,
 		Commands: []*cli.Command{
 			{
-				Name:  "init",
-				Usage: "Set up onair for the first time",
-				Action: func(c *cli.Context) error {
-					initHue(c)
-					return nil
-				},
-				Flags: []cli.Flag{
-					&cli.IntFlag{
-						Name:  "timeout",
-						Usage: "how long to wait for you to push the button on your Hue bridge",
-						Value: 15,
+				Name:   "hue",
+				Usage:  "commands for configuring your Hue system",
+				Before: altsrc.InitInputSourceWithContext(hueFlags, altsrc.NewYamlSourceFromFlagFunc("config")),
+				Flags:  hueFlags,
+				Subcommands: []*cli.Command{
+					{
+						Name:  "init",
+						Usage: "Set up onair for the first time",
+						Action: func(c *cli.Context) error {
+							initHue(c)
+							return nil
+						},
+						Flags: []cli.Flag{
+							&cli.IntFlag{
+								Name:  "timeout",
+								Usage: "how long to wait for you to push the button on your Hue bridge",
+								Value: 15,
+							},
+						},
 					},
-				},
-			},
-			{
-				Name:  "lights",
-				Usage: "display information about available lights and their color settings",
-				Action: func(c *cli.Context) error {
-					getHueLights(c)
-					return nil
+					{
+						Name:  "lights",
+						Usage: "display information about available lights and their color settings",
+						Action: func(c *cli.Context) error {
+							getHueLights(c)
+							return nil
+						},
+					},
 				},
 			},
 			{
