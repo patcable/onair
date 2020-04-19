@@ -16,6 +16,7 @@ brew install golang
 mkdir ~/gostuff
 export GOPATH=$HOME/gostuff
 export PATH=$GOPATH/bin:$PATH
+go get github.com/patcable/onair
 go install github.com/patcable/onair
 ```
 
