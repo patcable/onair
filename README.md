@@ -1,8 +1,10 @@
 # OnAir
 
-Are you working from home more often in these unprecdented times? Maybe it would be nice to give your housemates an indication that you're on a video or audio call. OnAir will monitor the state of your audio/video input devices, then change the color of a Philips Hue light! It's pretty neat.
+Are you working from home more often in these unprecdented times? Maybe it would be nice to give your housemates an indication that you're on a video or audio call. OnAir will monitor the state of your audio/video input devices, then change the color of a Philips Hue light! Here's a gif of it doing the thing:
 
-To get started you'll need:
+![onair](https://user-images.githubusercontent.com/2254952/79677012-47662c80-81ba-11ea-966b-99fd86452e41.gif)
+
+Seem cool? To get started you'll need:
 * A computer running macOS with [Micro Snitch](https://obdev.at/products/microsnitch/index.html) installed.
 * Familiarity with the macOS command line interface.
 * A [Philips Hue Bridge](https://www2.meethue.com/en-us/p/hue-bridge/046677458478).
