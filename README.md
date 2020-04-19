@@ -70,6 +70,7 @@ Now that you've figured out what colors you want to use, update your YAML file:
 
 ```
 ---
+system: hue
 hueuid: wrheWt05IVRdftSh76Af8fAUcX0o4Olwi-YvNYIO
 huelight: 5
 huebrightness: 70
@@ -109,5 +110,5 @@ If you'd like to add a different lighting system, you should check to see if it 
 
 ### Improvement Ideas
 * Probably better error handling or flow. Using logrus or having some sort of debug mode might be nice.
-* I built this for Micro Snitch because that's what I have, but extending it for [Oversight](https://objective-see.com/products/oversight.html) should be possible depending on the log type.
-* Write a launch agent definition for this so that it can load on user login
+* I built this for Micro Snitch because that's what I have, but extending it for [Oversight](https://objective-see.com/products/oversight.html) should be possible depending on the log format.
+* Write a launch agent definition for this so that it can load on user login. 
