@@ -1,2 +1,5 @@
+.DS_Store
 onair
 _CodeSignature
+*.zip
+*.pkg

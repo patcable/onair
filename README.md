@@ -7,13 +7,16 @@ Are you working from home more often in these unprecedented times? Maybe it woul
 ## Neat I want one!
 
 You'll need the following to get started:
-* A computer running macOS with [Micro Snitch](https://obdev.at/products/microsnitch/index.html) installed.
 * Familiarity with the macOS command line interface.
+* A computer running macOS with [Micro Snitch](https://obdev.at/products/microsnitch/index.html) installed.
 * A [Philips Hue Bridge](https://www2.meethue.com/en-us/p/hue-bridge/046677458478).
 * Some form of light to use with it - perhaps a [Philips Hue Go portable light](https://www2.meethue.com/en-us/p/hue-white-and-color-ambiance-go-portable-light/714606048).
 
+### Downloading OnAir
+There's a signed package available under the releases page here. 
+
 ### Building OnAir
-Never used Go before? You can use [homebrew](https://brew.sh/) to install golang and get _going_ pretty quickly:
+Perhaps you'd prefer to build OnAir. That's cool. If you've never built any Go things before, you can use [homebrew](https://brew.sh/) to install golang and get _going_ pretty quickly:
 
 ```
 brew install golang
@@ -24,7 +27,7 @@ go get github.com/patcable/onair
 go install github.com/patcable/onair
 ```
 
-You can put your $GOPATH wherever you want. You'll likely want to toss those `export` lines in your shell profile. If you want to modify any of the code, you can find that in `$GOPATH/src/github.com/patcable/onair`.
+You can put your $GOPATH wherever you want, and you'll likely want to toss those `export` lines in your shell profile. If you want to modify any of the code, you can find that in `$GOPATH/src/github.com/patcable/onair`.
 
 ## Configuring OnAir
 

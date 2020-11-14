@@ -2,10 +2,16 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>CFBundleExecutable</key>
-	<string>onair</string>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>English</string>
 	<key>CFBundleIdentifier</key>
 	<string>net.pcable.onair</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>onair</string>
+	<key>CFBundleVersion</key>
+	<string>1.0.3</string>
 	<key>InternetAccessPolicy</key>
 	<dict>
 		<key>ApplicationDescription</key>
@@ -66,7 +72,5 @@
 		<key>Website</key>
 		<string>https://github.com/patcable/onair</string>
 	</dict>
-	<key>NSHumanReadableCopyright</key>
-	<string>Patrick Cable</string>
 </dict>
 </plist>
