@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleExecutable</key>
+	<string>onair</string>
+	<key>CFBundleIdentifier</key>
+	<string>net.pcable.onair</string>
+	<key>InternetAccessPolicy</key>
+	<dict>
+		<key>ApplicationDescription</key>
+		<string>OnAirApplicationDescription</string>
+		<key>Connections</key>
+		<array>
+			<dict>
+				<key>DenyConsequences</key>
+				<string>OnAirHueBridgeDenyConsequences</string>
+				<key>Host</key>
+				<string>local-net</string>
+				<key>IsIncoming</key>
+				<false/>
+				<key>NetworkProtocol</key>
+				<string>TCP</string>
+				<key>Port</key>
+				<string>80</string>
+				<key>Purpose</key>
+				<string>OnAirHueBridgePurpose</string>
+				<key>Relevance</key>
+				<string>Essential</string>
+			</dict>
+			<dict>
+				<key>DenyConsequences</key>
+				<string>OnAirHueLocatorDenyConsequences</string>
+				<key>Host</key>
+				<string>*.meethue.com</string>
+				<key>IsIncoming</key>
+				<false/>
+				<key>NetworkProtocol</key>
+				<string>TCP</string>
+				<key>Port</key>
+				<string>443</string>
+				<key>Purpose</key>
+				<string>OnAirHueLocatorPurpose</string>
+				<key>Relevance</key>
+				<string>Essential</string>
+			</dict>
+		</array>
+		<key>DeveloperName</key>
+		<string>Patrick Cable</string>
+		<key>Localizations</key>
+		<dict>
+			<key>en</key>
+			<dict>
+				<key>OnAirApplicationDescription</key>
+				<string>OnAir changes the color of IP-based lighting when you are on a audio or video call.</string>
+				<key>OnAirHueBridgeDenyConsequences</key>
+				<string>If denied, OnAir can't change the configured light's brightness or color settings.</string>
+				<key>OnAirHueBridgePurpose</key>
+				<string>OnAir communicates with a Hue Bridge device on your network to control your lights when a video call starts.</string>
+				<key>OnAirHueLocatorDenyConsequences</key>
+				<string>If denied, OnAir will not be able to find the Hue Bridge device on your network.</string>
+				<key>OnAirHueLocatorPurpose</key>
+				<string>OnAir uses the Hue Broker Server to discover Hue Bridge devices on your network.</string>
+			</dict>
+		</dict>
+		<key>Website</key>
+		<string>https://github.com/patcable/onair</string>
+	</dict>
+	<key>NSHumanReadableCopyright</key>
+	<string>Patrick Cable</string>
+</dict>
+</plist>

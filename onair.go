@@ -8,12 +8,15 @@ package main
 //           so if you'd like to change those here's a likely place to make that happen.
 
 import (
+	"C"
 	"fmt"
 	"os"
 
 	"github.com/urfave/cli/v2"
 	"github.com/urfave/cli/v2/altsrc"
 )
+
+var buildVersion string
 
 func main() {
 	homeDir := os.Getenv("HOME")
@@ -108,10 +111,11 @@ func main() {
 	}
 
 	app := &cli.App{
-		Name:   "onair",
-		Usage:  "monitors your audio/video devices and controls a light based on their status",
-		Before: altsrc.InitInputSourceWithContext(globalFlags, altsrc.NewYamlSourceFromFlagFunc("config")),
-		Flags:  globalFlags,
+		Name:    "onair",
+		Version: buildVersion,
+		Usage:   "monitors your audio/video devices and controls a light based on their status",
+		Before:  altsrc.InitInputSourceWithContext(globalFlags, altsrc.NewYamlSourceFromFlagFunc("config")),
+		Flags:   globalFlags,
 		Commands: []*cli.Command{
 			{
 				Name:   "hue",
