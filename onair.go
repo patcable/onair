@@ -165,22 +165,6 @@ func main() {
 				},
 			},
 			{
-				Name: "ifttt-check",
-				Usage: "checks iftt setup by invoking the hooks with a delay between them",
-				Action: func(c *cli.Context) error {
-					checkIFTTTHooks(c)
-					return nil;
-				},
-				Flags: []cli.Flag{
-                                       &cli.IntFlag{
-						Name: "delay",
-						Usage: "delay in seconds between invoking on-hook and off-hook",
-						Value: 10,
-				       },
-				},
-				Before: altsrc.InitInputSourceWithContext(runFlags, altsrc.NewYamlSourceFromFlagFunc("config")),
-			},
-			{
 				Name:  "run",
 				Usage: "run the log watcher/set your lights",
 				Action: func(c *cli.Context) error {

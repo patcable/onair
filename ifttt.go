@@ -11,17 +11,12 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"github.com/urfave/cli/v2"
 )
 
 type iftttConfig struct {
 	key        string
 	onairHook  string
 	offairHook  string
-}
-
-func checkIFTTTHooks(c *cli.Context) {
-  // fill in
 }
 
 func invokeIFTTTHook(key string, hook string) error {
