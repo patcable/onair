@@ -154,6 +154,16 @@ func configureLightSystem(c *cli.Context) (light lightConfig, err error) {
 				Inactive:   []float32{inactivex, inactivey},
 			},
 		}
+        case "ifttt":
+	     light = lightConfig{
+			System: "ifttt",
+			Parameters: iftttConfig{
+				key: c.String("ifttt-key"),
+				onairHook: c.String("ifttt-onair"),
+				offairHook: c.String("ifttt-offair"),
+			},
+	     }
+
 	default:
 		return lightConfig{}, fmt.Errorf("You specified a lighting system of %s which is invalid", c.String("system"))
 	}
@@ -171,11 +181,17 @@ func setLight(light lightConfig, computerListening bool) (err error) {
 		} else {
 			err = setHueLights(settings.Bridge, settings.Light, settings.Inactive[0], settings.Inactive[1], settings.Brightness)
 		}
-	}
+        case "ifttt":
+	     settings := light.Parameters.(iftttConfig)
+	     if computerListening {
+	     	err = invokeIFTTTHook(settings.key, settings.onairHook)
+	     } else {
+	        err = invokeIFTTTHook(settings.key, settings.offairHook)
+	     }
 
 	if err != nil {
 		return err
 	}
-
+        }
 	return nil
 }

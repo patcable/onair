@@ -11,7 +11,6 @@ import (
 	"C"
 	"fmt"
 	"os"
-
 	"github.com/urfave/cli/v2"
 	"github.com/urfave/cli/v2/altsrc"
 )
@@ -59,7 +58,7 @@ func main() {
 		altsrc.NewStringFlag(&cli.StringFlag{
 			Name:    "system",
 			Aliases: []string{"s"},
-			Usage:   "which light system do you use (currently only supports hue)",
+			Usage:   "which light system do you use (currently only supports hue and ifttt webhooks)",
 			Value:   "hue",
 		}),
 		altsrc.NewStringFlag(&cli.StringFlag{
@@ -102,6 +101,23 @@ func main() {
 			Name:  "hueinactive",
 			Usage: "XY color value when video/audio is inactive",
 		}),
+		// addded ifttt flags here
+		altsrc.NewStringFlag(&cli.StringFlag{
+			Name:    "ifttt-key",
+			Aliases: []string{"k"},
+			Usage:   "key for IFTTT webhook requests",
+		}),
+		altsrc.NewStringFlag(&cli.StringFlag{
+			Name:    "ifttt-onair",
+			Aliases: []string{"o"},
+			Usage:   "Name of IFTTT webhook invoked when video/audio becomes active",
+		}),
+		altsrc.NewStringFlag(&cli.StringFlag{
+			Name:    "ifttt-offair",
+			Aliases: []string{"f"},
+			Usage:   "Name of IFTTT webhook invoked when video/audio becomes inactive",
+		}),
+		// end of ifttt flags
 		&cli.StringFlag{
 			Name:   "config",
 			Usage:  "Path to the config yaml file",
@@ -147,6 +163,22 @@ func main() {
 						},
 					},
 				},
+			},
+			{
+				Name: "ifttt-check",
+				Usage: "checks iftt setup by invoking the hooks with a delay between them",
+				Action: func(c *cli.Context) error {
+					checkIFTTTHooks(c)
+					return nil;
+				},
+				Flags: []cli.Flag{
+                                       &cli.IntFlag{
+						Name: "delay",
+						Usage: "delay in seconds between invoking on-hook and off-hook",
+						Value: 10,
+				       },
+				},
+				Before: altsrc.InitInputSourceWithContext(runFlags, altsrc.NewYamlSourceFromFlagFunc("config")),
 			},
 			{
 				Name:  "run",
