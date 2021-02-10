@@ -4,9 +4,8 @@ package main
 // your computer's camera or microphone is enabled. You should take a look at the
 // README.md for more information on how to use this application.
 //
-// hue.go: a collection of functions for actually having the Hue change colors or
-//         brightness. If you want to modify what information `onair lights` displays
-//         or update how the light updates, you're in the right place.
+// iftt.go: function to invoke IFTTT hooks
+//      
 
 import (
 	"fmt"
