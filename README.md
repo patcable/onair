@@ -4,13 +4,16 @@ Are you working from home more often in these unprecedented times? Maybe it woul
 
 ![onair](https://user-images.githubusercontent.com/2254952/79677012-47662c80-81ba-11ea-966b-99fd86452e41.gif)
 
+OnAir will either directly access your Hue system, or it can invoke IFTTT webhooks.  You can use these to drive lots of different activieiss.
+
 ## Neat I want one!
 
 You'll need the following to get started:
 * Familiarity with the macOS command line interface.
 * A computer running macOS with [Micro Snitch](https://obdev.at/products/microsnitch/index.html) installed.
 * A [Philips Hue Bridge](https://www2.meethue.com/en-us/p/hue-bridge/046677458478).
-* Some form of light to use with it - perhaps a [Philips Hue Go portable light](https://www2.meethue.com/en-us/p/hue-white-and-color-ambiance-go-portable-light/714606048).
+* Some form of light to use with it - perhaps a [Philips Hue Go portable light](https://www2.meethue.com/en-us/p/hue-white-and-color-ambiance-go-portable-light/714606048)
+* Alternatively, you need an IFTTT account and some device that you can drive from IFTTT
 
 ### Downloading OnAir
 There's a signed package available under the releases page here. 
@@ -29,9 +32,9 @@ go install github.com/patcable/onair
 
 You can put your $GOPATH wherever you want, and you'll likely want to toss those `export` lines in your shell profile. If you want to modify any of the code, you can find that in `$GOPATH/src/github.com/patcable/onair`.
 
-## Configuring OnAir
+## Configuring OnAir for Hue
 
-This guide focuses on a Philips Hue system; if other lights become supported I'll figure out what to do with this guide.
+This section focuses on a Philips Hue system.
 
 ### Setting Up the Hue Bridge
 Once you have the `onair` binary, you'll need to set OnAir up so that it can talk to the Hue bridge. To do this, run `onair hue init`, walk over to the Hue bridge and press the button. This authenticates OnAir to the Hue bridge. If successful, you should see this output:
@@ -88,6 +91,22 @@ At this point, you're ready to give it a go. Make sure that Micro Snitch is runn
 ```
 
 The lack of output is normal. Find an application that enables the microphone or camera, and watch your light change color! It should change color back to the inactive color once you close the application. This works across any application on macOS! It's very satisfying.
+
+## Configuring IFTTT
+
+Create two webhooks in IFTTT - one for the action when a zoom call is started, and one for when it stops.
+
+Now, create a file at `$HOME/.onair.yml` with this in it:
+```
+---
+system: ifttt
+ifttt-key: YOUR IFTTT WEBHOOK KEY
+ifttt-onair: IFTTT Maker Event to invoke when you go on the air
+ifttt-oftair: IFTTT Maker Event to invoke when you go off the air.
+```
+
+Then , run the watcher as in the previous section
+
 
 ## Start OnAir Automatically
 

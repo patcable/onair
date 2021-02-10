@@ -11,7 +11,7 @@
 	<key>CFBundleName</key>
 	<string>onair</string>
 	<key>CFBundleVersion</key>
-	<string>1.0.3</string>
+	<string>1.0.4</string>
 	<key>InternetAccessPolicy</key>
 	<dict>
 		<key>ApplicationDescription</key>
@@ -50,6 +50,22 @@
 				<key>Relevance</key>
 				<string>Essential</string>
 			</dict>
+			<dict>
+				<key>DenyConsequences</key>
+				<string>OnAirIFTTTDenyConsequences</string>
+				<key>Host</key>
+				<string>*.ifttt.com</string>
+				<key>IsIncoming</key>
+				<false/>
+				<key>NetworkProtocol</key>
+				<string>TCP</string>
+				<key>Port</key>
+				<string>443</string>
+				<key>Purpose</key>
+				<string>OnAirIFTTTLocatorPurpose</string>
+				<key>Relevance</key>
+				<string>Essential</string>
+			</dict>
 		</array>
 		<key>DeveloperName</key>
 		<string>Patrick Cable</string>
@@ -58,13 +74,15 @@
 			<key>en</key>
 			<dict>
 				<key>OnAirApplicationDescription</key>
-				<string>OnAir changes the color of IP-based lighting when you are on a audio or video call.</string>
+				<string>OnAir changes the color of IP-based lighting when you are on a audio or video call.  Or it invokes IFTTT webhooks</string>
 				<key>OnAirHueBridgeDenyConsequences</key>
 				<string>If denied, OnAir can't change the configured light's brightness or color settings.</string>
 				<key>OnAirHueBridgePurpose</key>
 				<string>OnAir communicates with a Hue Bridge device on your network to control your lights when a video call starts.</string>
 				<key>OnAirHueLocatorDenyConsequences</key>
 				<string>If denied, OnAir will not be able to find the Hue Bridge device on your network.</string>
+				<key>OnAirHueIFTTTDenyConsequences</key>
+				<string>If denied, OnAir will not be able to connect to IFTTT.</string>
 				<key>OnAirHueLocatorPurpose</key>
 				<string>OnAir uses the Hue Broker Server to discover Hue Bridge devices on your network.</string>
 			</dict>
