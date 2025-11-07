@@ -4,7 +4,7 @@ Are you working from home more often in these unprecedented times? Maybe it woul
 
 ![onair](https://user-images.githubusercontent.com/2254952/79677012-47662c80-81ba-11ea-966b-99fd86452e41.gif)
 
-OnAir will either directly access your Hue system, or it can invoke IFTTT webhooks.  You can use these to drive lots of different activieiss.
+OnAir will either directly access your Hue system, or it can invoke IFTTT webhooks.  You can use these to drive lots of different activities.
 
 ## Neat I want one!
 
@@ -127,3 +127,7 @@ If you'd like to add a different lighting system, you should check to see if it 
 
 ### Improvement Ideas
 * Probably better error handling or flow. Using logrus or having some sort of debug mode beyond just what the CoreMediaIO binding provides
+
+## Acknowledgements
+
+[antonfisher/go-media-devices-state](https://github.com/antonfisher/go-media-devices-state/) was a huge help to modernizing this project. A forked version that has some symbol name updates and a verbosity toggle is available at [patcable/go-media-devices-state](https://github.com/antonfisher/go-media-devices-state/).
