@@ -11,6 +11,7 @@ import (
 	"C"
 	"fmt"
 	"os"
+
 	"github.com/urfave/cli/v2"
 	"github.com/urfave/cli/v2/altsrc"
 )
@@ -24,7 +25,6 @@ func main() {
 		os.Exit(1)
 	}
 	// Some defaults.?
-	logFile := fmt.Sprintf("%s/Library/Logs/Micro Snitch.log", homeDir)
 	configFile := fmt.Sprintf("%s/.onair.yml", homeDir)
 
 	globalFlags := []cli.Flag{
@@ -66,11 +66,6 @@ func main() {
 			Aliases: []string{"t"},
 			Usage:   "type of log (currently only supports microsnitch)",
 			Value:   "microsnitch",
-		}),
-		altsrc.NewStringFlag(&cli.StringFlag{
-			Name:  "log",
-			Usage: "location of the log file that tracks device status",
-			Value: logFile,
 		}),
 		altsrc.NewStringFlag(&cli.StringFlag{
 			Name:    "hueuid",
