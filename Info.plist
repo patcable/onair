@@ -11,7 +11,7 @@
 	<key>CFBundleName</key>
 	<string>onair</string>
 	<key>CFBundleVersion</key>
-	<string>1.1.0</string>
+	<string>1.1.1</string>
 	<key>InternetAccessPolicy</key>
 	<dict>
 		<key>ApplicationDescription</key>
@@ -68,7 +68,7 @@
 			</dict>
 		</array>
 		<key>DeveloperName</key>
-		<string>Patrick Cable</string>
+		<string>Big Technology LLC</string>
 		<key>Localizations</key>
 		<dict>
 			<key>en</key>

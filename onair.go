@@ -8,26 +8,30 @@ package main
 //           so if you'd like to change those here's a likely place to make that happen.
 
 import (
-	"C"
 	"fmt"
 	"os"
+
+	"context"
 
 	altsrc "github.com/urfave/cli-altsrc/v3"
 	altsrcyaml "github.com/urfave/cli-altsrc/v3/yaml"
 	"github.com/urfave/cli/v3"
 )
-import "context"
 
 var buildVersion string
+var configFile string
 
 func main() {
-	homeDir := os.Getenv("HOME")
-	if homeDir == "" {
-		fmt.Printf("onair requires $HOME to be set")
-		os.Exit(1)
+	if os.Getenv("ONAIR_CONFIG") == "" {
+		homeDir := os.Getenv("HOME")
+		if homeDir == "" {
+			fmt.Printf("onair requires $HOME to be set")
+			os.Exit(1)
+		}
+		configFile = fmt.Sprintf("%s/.onair.yml", homeDir)
+	} else {
+		configFile = os.Getenv("ONAIR_CONFIG")
 	}
-	// Some defaults.?
-	configFile := fmt.Sprintf("%s/.onair.yml", homeDir)
 
 	globalFlags := []cli.Flag{
 		&cli.IntFlag{

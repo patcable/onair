@@ -50,13 +50,13 @@ func initHue(ctx context.Context, c *cli.Command) {
 	}
 
 	config := fmt.Sprintf("---\nsystem: hue\nhueuid: %s\n", user)
-	err = os.WriteFile("/tmp/dat1", []byte(config), 0640)
+	err = os.WriteFile(configFile, []byte(config), 0640)
 	if err != nil {
 		fmt.Printf("Could not write config: %s\n", err)
 		os.Exit(1)
 	}
 
-	fmt.Printf("Wrote to $HOME/onair.yml:\n---\nsystem: hue\nhueuid: %s\n", user)
+	fmt.Printf("Wrote to %s:\n---\nsystem: hue\nhueuid: %s\n", configFile, user)
 
 }
 
