@@ -12,9 +12,11 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/urfave/cli/v2"
-	"github.com/urfave/cli/v2/altsrc"
+	altsrc "github.com/urfave/cli-altsrc/v3"
+	altsrcyaml "github.com/urfave/cli-altsrc/v3/yaml"
+	"github.com/urfave/cli/v3"
 )
+import "context"
 
 var buildVersion string
 
@@ -28,132 +30,150 @@ func main() {
 	configFile := fmt.Sprintf("%s/.onair.yml", homeDir)
 
 	globalFlags := []cli.Flag{
-		&cli.StringFlag{
-			Name:  "config",
-			Usage: "Path to the config yaml file",
-			Value: configFile,
+		&cli.IntFlag{
+			Name:    "interval",
+			Aliases: []string{"t"},
+			Usage:   "interval in seconds to poll the CoreMediaIO system",
+			Value:   2,
+		},
+		&cli.BoolFlag{
+			Name:    "debug",
+			Aliases: []string{"d"},
+			Usage:   "print detected cameras/mics on every poll",
+			Value:   false,
 		},
 	}
 
 	hueFlags := []cli.Flag{
-		altsrc.NewStringFlag(&cli.StringFlag{
+		&cli.StringFlag{
 			Name:    "hueuid",
 			Aliases: []string{"u"},
 			Usage:   "username for the Hue bridge",
-		}),
-		altsrc.NewStringFlag(&cli.StringFlag{
+			Sources: cli.NewValueSourceChain(
+				altsrcyaml.YAML("hueuid", altsrc.StringSourcer(configFile)),
+			),
+		},
+		&cli.StringFlag{
 			Name:    "hueip",
 			Aliases: []string{"i"},
 			Usage:   "ip address of the Hue bridge (automatic discovery if not specified)",
-		}),
-		&cli.StringFlag{
-			Name:   "config",
-			Usage:  "Path to the config yaml file",
-			Value:  configFile,
-			Hidden: true,
+			Sources: cli.NewValueSourceChain(
+				altsrcyaml.YAML("hueip", altsrc.StringSourcer(configFile)),
+			),
 		},
 	}
 
 	runFlags := []cli.Flag{
-		altsrc.NewStringFlag(&cli.StringFlag{
+		&cli.StringFlag{
 			Name:    "system",
 			Aliases: []string{"s"},
 			Usage:   "which light system do you use (currently only supports hue and ifttt webhooks)",
 			Value:   "hue",
-		}),
-		altsrc.NewStringFlag(&cli.StringFlag{
-			Name:    "logtype",
-			Aliases: []string{"t"},
-			Usage:   "type of log (currently only supports microsnitch)",
-			Value:   "microsnitch",
-		}),
-		altsrc.NewStringFlag(&cli.StringFlag{
+		},
+		&cli.StringFlag{
 			Name:    "hueuid",
 			Aliases: []string{"u"},
 			Usage:   "username for the Hue bridge",
-		}),
-		altsrc.NewStringFlag(&cli.StringFlag{
+			Sources: cli.NewValueSourceChain(
+				altsrcyaml.YAML("hueuid", altsrc.StringSourcer(configFile)),
+			),
+		},
+		&cli.StringFlag{
 			Name:    "hueip",
 			Aliases: []string{"i"},
 			Usage:   "ip address of the Hue bridge (automatic discovery if not specified)",
-		}),
-		altsrc.NewIntFlag(&cli.IntFlag{
+			Sources: cli.NewValueSourceChain(
+				altsrcyaml.YAML("hueip", altsrc.StringSourcer(configFile)),
+			),
+		},
+		&cli.IntFlag{
 			Name:    "huelight",
 			Aliases: []string{"l"},
 			Usage:   "ID of the light you'll control",
-		}),
-		altsrc.NewIntFlag(&cli.IntFlag{
+			Sources: cli.NewValueSourceChain(
+				altsrcyaml.YAML("huelight", altsrc.StringSourcer(configFile)),
+			),
+		},
+		&cli.IntFlag{
 			Name:    "huebrightness",
 			Aliases: []string{"b"},
 			Usage:   "Brightness (1-254)",
 			Value:   70,
-		}),
-		altsrc.NewStringFlag(&cli.StringFlag{
+			Sources: cli.NewValueSourceChain(
+				altsrcyaml.YAML("huebrightness", altsrc.StringSourcer(configFile)),
+			),
+		},
+		&cli.StringFlag{
 			Name:  "hueactive",
 			Usage: "XY color value when video/audio is active",
-		}),
-		altsrc.NewStringFlag(&cli.StringFlag{
+			Sources: cli.NewValueSourceChain(
+				altsrcyaml.YAML("hueactive", altsrc.StringSourcer(configFile)),
+			),
+		},
+		&cli.StringFlag{
 			Name:  "hueinactive",
 			Usage: "XY color value when video/audio is inactive",
-		}),
-		// addded ifttt flags here
-		altsrc.NewStringFlag(&cli.StringFlag{
+			Sources: cli.NewValueSourceChain(
+				altsrcyaml.YAML("hueinactive", altsrc.StringSourcer(configFile)),
+			),
+		},
+		&cli.StringFlag{
 			Name:    "ifttt-key",
 			Aliases: []string{"k"},
 			Usage:   "key for IFTTT webhook requests",
-		}),
-		altsrc.NewStringFlag(&cli.StringFlag{
+			Sources: cli.NewValueSourceChain(
+				altsrcyaml.YAML("ifttt-key", altsrc.StringSourcer(configFile)),
+			),
+		},
+		&cli.StringFlag{
 			Name:    "ifttt-onair",
 			Aliases: []string{"o"},
 			Usage:   "Name of IFTTT webhook invoked when video/audio becomes active",
-		}),
-		altsrc.NewStringFlag(&cli.StringFlag{
+			Sources: cli.NewValueSourceChain(
+				altsrcyaml.YAML("ifttt-onair", altsrc.StringSourcer(configFile)),
+			),
+		},
+		&cli.StringFlag{
 			Name:    "ifttt-offair",
 			Aliases: []string{"f"},
 			Usage:   "Name of IFTTT webhook invoked when video/audio becomes inactive",
-		}),
-		// end of ifttt flags
-		&cli.StringFlag{
-			Name:   "config",
-			Usage:  "Path to the config yaml file",
-			Value:  configFile,
-			Hidden: true,
+			Sources: cli.NewValueSourceChain(
+				altsrcyaml.YAML("ifttt-offair", altsrc.StringSourcer(configFile)),
+			),
 		},
 	}
 
-	app := &cli.App{
+	app := &cli.Command{
 		Name:    "onair",
 		Version: buildVersion,
 		Usage:   "monitors your audio/video devices and controls a light based on their status",
-		Before:  altsrc.InitInputSourceWithContext(globalFlags, altsrc.NewYamlSourceFromFlagFunc("config")),
 		Flags:   globalFlags,
 		Commands: []*cli.Command{
 			{
-				Name:   "hue",
-				Usage:  "commands for configuring your Hue system",
-				Before: altsrc.InitInputSourceWithContext(hueFlags, altsrc.NewYamlSourceFromFlagFunc("config")),
-				Flags:  hueFlags,
-				Subcommands: []*cli.Command{
+				Name:  "hue",
+				Usage: "commands for configuring your Hue system",
+				Flags: hueFlags,
+				Commands: []*cli.Command{
 					{
 						Name:  "init",
 						Usage: "Set up onair for the first time",
-						Action: func(c *cli.Context) error {
-							initHue(c)
+						Action: func(ctx context.Context, c *cli.Command) error {
+							initHue(ctx, c)
 							return nil
 						},
 						Flags: []cli.Flag{
 							&cli.IntFlag{
 								Name:  "timeout",
 								Usage: "how long to wait for you to push the button on your Hue bridge",
-								Value: 15,
+								Value: 30,
 							},
 						},
 					},
 					{
 						Name:  "lights",
 						Usage: "display information about available lights and their color settings",
-						Action: func(c *cli.Context) error {
-							getHueLights(c)
+						Action: func(ctx context.Context, c *cli.Command) error {
+							getHueLights(ctx, c)
 							return nil
 						},
 					},
@@ -162,17 +182,16 @@ func main() {
 			{
 				Name:  "run",
 				Usage: "run the log watcher/set your lights",
-				Action: func(c *cli.Context) error {
-					run(c)
+				Action: func(ctx context.Context, c *cli.Command) error {
+					run(ctx, c)
 					return nil
 				},
-				Before: altsrc.InitInputSourceWithContext(runFlags, altsrc.NewYamlSourceFromFlagFunc("config")),
-				Flags:  runFlags,
+				Flags: runFlags,
 			},
 		},
 	}
 
-	err := app.Run(os.Args)
+	err := app.Run(context.Background(), os.Args)
 	if err != nil {
 		fmt.Printf("oh no: %s\n", err)
 	}

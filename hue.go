@@ -9,6 +9,7 @@ package main
 //         or update how the light updates, you're in the right place.
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strconv"
@@ -16,7 +17,7 @@ import (
 	"time"
 
 	"github.com/amimof/huego"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 type hueConfig struct {
@@ -27,7 +28,7 @@ type hueConfig struct {
 	Inactive   []float32
 }
 
-func initHue(c *cli.Context) {
+func initHue(ctx context.Context, c *cli.Command) {
 	if c.String("hueuid") != "" {
 		fmt.Printf("Seems like you already have a username set. Remove that variable from your config file if that isn't the case.\n")
 		os.Exit(1)
@@ -48,15 +49,22 @@ func initHue(c *cli.Context) {
 		os.Exit(1)
 	}
 
-	fmt.Printf("   Username: %s\n", user)
-	fmt.Printf("Save this value, you'll need it for the config file.\n")
+	config := fmt.Sprintf("---\nsystem: hue\nhueuid: %s\n", user)
+	err = os.WriteFile("/tmp/dat1", []byte(config), 0640)
+	if err != nil {
+		fmt.Printf("Could not write config: %s\n", err)
+		os.Exit(1)
+	}
+
+	fmt.Printf("Wrote to $HOME/onair.yml:\n---\nsystem: hue\nhueuid: %s\n", user)
+
 }
 
 func loginHue(username string, ip string) (bridge *huego.Bridge, err error) {
 	if ip == "" {
 		bridge, err = huego.Discover()
 		if err != nil {
-			return nil, fmt.Errorf("Could not discover the Hue bridge - is https://www.meethue.com/api/nupnp accessible?")
+			return nil, fmt.Errorf("could not discover the Hue bridge - is https://www.meethue.com/api/nupnp accessible?")
 		}
 
 		bridge = bridge.Login(username)
@@ -66,7 +74,7 @@ func loginHue(username string, ip string) (bridge *huego.Bridge, err error) {
 	return bridge, nil
 }
 
-func getHueLights(c *cli.Context) {
+func getHueLights(ctx context.Context, c *cli.Command) {
 	bridge, err := loginHue(c.String("hueuid"), c.String("hueip"))
 	if err != nil {
 		fmt.Printf("Could not login to bridge: %s\n", err)

@@ -9,12 +9,13 @@ package main
 //             wanted, maybe output something different when video is active vs. inactive.
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"time"
 
 	mediaDevices "github.com/patcable/go-media-devices-state"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 )
 
 type lightConfig struct {
@@ -24,7 +25,7 @@ type lightConfig struct {
 
 // run: where the magic happens! this function tails the log file, and for each update to the file, will
 // update the system state and then check that state. if any devices are "active" then it will do a thing.
-func run(c *cli.Context) {
+func run(ctx context.Context, c *cli.Command) {
 	// Do some checks here to make sure we have the bits we need. If you add a lighting system. probably worth adding
 	// something like this here. Don't use the `required` flag of urfave/cli since people may be using different light
 	// systems.
@@ -34,19 +35,20 @@ func run(c *cli.Context) {
 	}
 
 	// Configure the light - add new lighting systems over there.
-	light, err := configureLightSystem(c)
+	light, err := configureLightSystem(ctx, c)
 	if err != nil {
 		fmt.Printf("Error parsing light config: %s\n", err.Error())
 		os.Exit(1)
 	}
 
+	// every n seconds, check the status of the system camera and microphone. If either are hot, change the light.
 	for {
-		cam, err := mediaDevices.IsCameraOn()
+		cam, err := mediaDevices.IsCameraOn(c.Bool("debug"))
 		if err != nil {
 			fmt.Printf("Error with IsCameraOn: %s\n", err.Error())
 			os.Exit(1)
 		}
-		mic, err := mediaDevices.IsMicrophoneOn()
+		mic, err := mediaDevices.IsMicrophoneOn(c.Bool("debug"))
 		if err != nil {
 			fmt.Printf("Error with IsMicrophoneOn: %s\n", err.Error())
 			os.Exit(1)
@@ -57,18 +59,23 @@ func run(c *cli.Context) {
 			if err != nil {
 				fmt.Printf("run: Unable to setLightWithContext: %s\n", err)
 			}
+		} else {
+			err := setLight(light, false)
+			if err != nil {
+				fmt.Printf("run: Unable to setLightWithContext: %s\n", err)
+			}
 		}
 		time.Sleep(1 * time.Second)
 	}
 }
 
-// configureLightSystem will... take the config vars and set up the lighting sytem. If you want
+// configureLightSystem will take the config vars and set up the lighting system. If you want
 // to add a lighting system, this is one of the places you'd need edit to do that.
 // Take a look at the hueConfig struct in hue.go - you'll want one of those for your lighting
 // system. You'll want to also set up the convenience commands too - ie. `hue init` `hue lights`
 // so that you can get the values you'd need for that struct. Finally, update setLightWithContext
 // below so that depending on system type, you send the right function for controlling the light.
-func configureLightSystem(c *cli.Context) (light lightConfig, err error) {
+func configureLightSystem(ctx context.Context, c *cli.Command) (light lightConfig, err error) {
 	switch c.String("system") {
 	case "hue":
 		// Get connected to the Hue bridge
@@ -122,8 +129,14 @@ func setLight(light lightConfig, computerListening bool) (err error) {
 		settings := light.Parameters.(hueConfig)
 		if computerListening {
 			err = setHueLights(settings.Bridge, settings.Light, settings.Active[0], settings.Active[1], settings.Brightness)
+			if err != nil {
+				fmt.Printf("could set hue lights: %s", err)
+			}
 		} else {
 			err = setHueLights(settings.Bridge, settings.Light, settings.Inactive[0], settings.Inactive[1], settings.Brightness)
+			if err != nil {
+				fmt.Printf("could set hue lights: %s", err)
+			}
 		}
 	case "ifttt":
 		settings := light.Parameters.(iftttConfig)

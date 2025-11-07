@@ -10,9 +10,9 @@ OnAir will either directly access your Hue system, or it can invoke IFTTT webhoo
 
 You'll need the following to get started:
 * Familiarity with the macOS command line interface.
-* A computer running macOS with [Micro Snitch](https://obdev.at/products/microsnitch/index.html) installed.
-* A [Philips Hue Bridge](https://www2.meethue.com/en-us/p/hue-bridge/046677458478).
-* Some form of light to use with it - perhaps a [Philips Hue Go portable light](https://www2.meethue.com/en-us/p/hue-white-and-color-ambiance-go-portable-light/714606048)
+* If using the Hue light
+   * A [Philips Hue Bridge](https://www.philips-hue.com/en-us/p/hue-bridge/046677458478).
+   * Some form of light to use with it - perhaps a [Philips Hue Go portable accent light](https://www.philips-hue.com/en-us/p/hue-white-and-color-ambiance-go-portable-accent-light/7602031U7)
 * Alternatively, you need an IFTTT account and some device that you can drive from IFTTT
 
 ### Downloading OnAir
@@ -33,9 +33,6 @@ go install github.com/patcable/onair
 You can put your $GOPATH wherever you want, and you'll likely want to toss those `export` lines in your shell profile. If you want to modify any of the code, you can find that in `$GOPATH/src/github.com/patcable/onair`.
 
 ## Configuring OnAir for Hue
-
-This section focuses on a Philips Hue system.
-
 ### Setting Up the Hue Bridge
 Once you have the `onair` binary, you'll need to set OnAir up so that it can talk to the Hue bridge. To do this, run `onair hue init`, walk over to the Hue bridge and press the button. This authenticates OnAir to the Hue bridge. If successful, you should see this output:
 
@@ -85,15 +82,11 @@ hueinactive: 0.1989,0.4146
 ```
 
 ### Run the watcher!
-At this point, you're ready to give it a go. Make sure that Micro Snitch is running and type `onair run` then hit enter. You'll see a log line indicating that OnAir is watching the Micro Snitch log, but other than that it will be quiet:
-```
-2020/04/18 20:16:51 Seeked /Users/cable/Library/Logs/Micro Snitch.log - &{Offset:0 Whence:2}
-```
+Type `onair run` then hit enter. 
 
 The lack of output is normal. Find an application that enables the microphone or camera, and watch your light change color! It should change color back to the inactive color once you close the application. This works across any application on macOS! It's very satisfying.
 
 ## Configuring IFTTT
-
 Create two webhooks in IFTTT - one for the action when a zoom call is started, and one for when it stops.
 
 Now, create a file at `$HOME/.onair.yml` with this in it:
@@ -105,11 +98,9 @@ ifttt-onair: IFTTT Maker Event to invoke when you go on the air
 ifttt-oftair: IFTTT Maker Event to invoke when you go off the air.
 ```
 
-Then , run the watcher as in the previous section
-
+Then, run the watcher as in the previous section
 
 ## Start OnAir Automatically
-
 If `onair run` works well for you, you can make it run in the background automatically.
 
 First, symlink `/usr/local/bin/onair` to `$GOPATH/bin/onair`, then toss the launch agent plist in `~/Library/LaunchAgents/net.pcable.onair.plist`. You can find that plist file in this repository.
@@ -117,27 +108,22 @@ First, symlink `/usr/local/bin/onair` to `$GOPATH/bin/onair`, then toss the laun
 Load the launch configuration with `launchctl load ~/Library/LaunchAgents/net.pcable.onair.plist` and it'll start immediately.
 
 ## Issues
-PRs are welcome! I'm happy to look at those as time allows. If you run into issues, opening an issue is the best way to get my attention, but it might be a while. I should probably add in better debug log support to make this a bit easier on myself. Coming soon :)
+PRs are welcome! I'm happy to look at those as time allows. As you can tell by the commit history, I dont really do much for this app.
 
 ## Contributing
-
 If you're interested in adding bits to OnAir this section will be helpful.
 
 ### App Layout
 * `onair.go` has the CLI skeleton, and all the configuration options. If you want to add a config option or change a default that isn't in the config file, this is where you'd do it. Any command that has a `Before` attribute that references the `altsrc` package can be pulled in from the YAML file referenced in the `config` CLI String Flag.
-* `watcher.go` has the main run function of the application. This is the part of the app that actually watches the log file you specify, configures the parser for that file, sets up the lighting options based on configured system and type, etc. 
+* `watcher.go` has the main run function of the application. This is the part of the app that actually polls the OS, configures the parser for that file, sets up the lighting options based on configured system and type, etc. 
 * `hue.go` has the functions specific to the hue lighting setup. Notably, a `hueConfig` struct that gets used in `watcher.go` to actually set stuff for the lights.
-
-### Adding a Log Parser
-If you want to add a parser, update `configureParser` with a new grok pattern (`gr.AddPattern`) and then update the switch statement in `configureParser` so that the run function knows to use that grok filter. You'll need to update the for loop in the run function as well since there are likely new field names that you may need to use.
 
 ### Adding a Lighting System
 If you'd like to add a different lighting system, you should check to see if it has a golang library first. If not, step one may be: write a library for your lighting system. Once that's done, to get that into OnAir, you'll need to:
 
-* Add some commands/subcommands to get information about your lights in `onair.go`. Config values should be named `SYSTEMthing` (ie. `lifxlight` if you were adding in lifx support)
-* Write those functions in `SYSTEM.go` (no caps plz) 
+* Add some commands/subcommands to get information about your lights in `onair.go`. Config values should be named `[SYSTEM]thing` (ie. `lifxlight` if you were adding in lifx support)
+* Write those functions in `[SYSTEMNAME].go`
 * Update `configureLightSystem` and `setLight` functions
 
 ### Improvement Ideas
-* Probably better error handling or flow. Using logrus or having some sort of debug mode might be nice.
-* I built this for Micro Snitch because that's what I have, but extending it for [Oversight](https://objective-see.com/products/oversight.html) should be possible depending on the log format.
+* Probably better error handling or flow. Using logrus or having some sort of debug mode beyond just what the CoreMediaIO binding provides
