@@ -1,14 +1,12 @@
 module github.com/patcable/onair
 
-go 1.14
+go 1.25
 
 require (
-	github.com/amimof/huego v1.1.0
-	github.com/fsnotify/fsnotify v1.4.9 // indirect
-	github.com/hpcloud/tail v1.0.0
-	github.com/urfave/cli/v2 v2.2.0
-	github.com/vjeantet/grok v1.0.0
-	golang.org/x/sys v0.0.0-20201113233024-12cec1faf1ba // indirect
-	gopkg.in/fsnotify.v1 v1.4.7 // indirect
-	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
+	github.com/amimof/huego v1.2.1
+	github.com/patcable/go-media-devices-state v0.3.0
+	github.com/urfave/cli-altsrc/v3 v3.1.0
+	github.com/urfave/cli/v3 v3.5.0
 )
+
+require gopkg.in/yaml.v3 v3.0.1 // indirect

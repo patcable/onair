@@ -9,20 +9,14 @@ package main
 //             wanted, maybe output something different when video is active vs. inactive.
 
 import (
+	"context"
 	"fmt"
-	"io"
 	"os"
+	"time"
 
-	"github.com/hpcloud/tail"
-	"github.com/urfave/cli/v2"
-	"github.com/vjeantet/grok"
+	mediaDevices "github.com/patcable/go-media-devices-state"
+	"github.com/urfave/cli/v3"
 )
-
-type deviceState struct {
-	Name  string
-	Type  string
-	State string
-}
 
 type lightConfig struct {
 	System     string
@@ -31,16 +25,7 @@ type lightConfig struct {
 
 // run: where the magic happens! this function tails the log file, and for each update to the file, will
 // update the system state and then check that state. if any devices are "active" then it will do a thing.
-func run(c *cli.Context) {
-	var state map[string]deviceState
-	state = make(map[string]deviceState)
-	config := tail.Config{
-		Follow: true,
-		Location: &tail.SeekInfo{
-			Whence: io.SeekEnd,
-		},
-	}
-
+func run(ctx context.Context, c *cli.Command) {
 	// Do some checks here to make sure we have the bits we need. If you add a lighting system. probably worth adding
 	// something like this here. Don't use the `required` flag of urfave/cli since people may be using different light
 	// systems.
@@ -49,99 +34,65 @@ func run(c *cli.Context) {
 		os.Exit(1)
 	}
 
-	// Get our log file ready for use here
-	t, err := tail.TailFile(c.String("log"), config)
-	if err != nil {
-		fmt.Printf("Cant tail the file: %s\n", err)
-		os.Exit(1)
-	}
-
-	// Configure parser - you'd add a new log format over in that function.
-	// You'll need to do Stuff down in the for loop below to support the different
-	// format as well.
-	gr, parser, err := configureParser(c.String("logtype"))
-	if err != nil {
-		fmt.Printf("Cant set up the parser: %s\n", err)
-		os.Exit(1)
-	}
-
 	// Configure the light - add new lighting systems over there.
-	light, err := configureLightSystem(c)
+	light, err := configureLightSystem(ctx, c)
 	if err != nil {
 		fmt.Printf("Error parsing light config: %s\n", err.Error())
 		os.Exit(1)
 	}
 
-	// Parse each line of the file. Update state when you do, then check the state to see if anything is active.
-	for line := range t.Lines {
-		msg, _ := gr.Parse(parser, line.Text)
-		if len(msg) == 0 {
-			// don't care about devices connected/disconnected
-			continue
+	// every n seconds, check the status of the system camera and microphone. If either are hot, change the light.
+	for {
+		cam, err := mediaDevices.IsCameraOn(c.Bool("debug"))
+		if err != nil {
+			fmt.Printf("Error with IsCameraOn: %s\n", err.Error())
+			os.Exit(1)
+		}
+		mic, err := mediaDevices.IsMicrophoneOn(c.Bool("debug"))
+		if err != nil {
+			fmt.Printf("Error with IsMicrophoneOn: %s\n", err.Error())
+			os.Exit(1)
 		}
 
-		state[msg["device"]] = deviceState{
-			Type:  msg["deviceType"],
-			State: msg["onoff"],
-		}
-
-		// read the state of everything. see if anythings active?
-		var computerListening bool
-		for _, v := range state {
-			if v.State == "active" {
-				computerListening = true
+		if cam || mic {
+			err := setLight(light, true)
+			if err != nil {
+				fmt.Printf("run: Unable to setLightWithContext: %s\n", err)
+			}
+		} else {
+			err := setLight(light, false)
+			if err != nil {
+				fmt.Printf("run: Unable to setLightWithContext: %s\n", err)
 			}
 		}
-		err := setLight(light, computerListening)
-		if err != nil {
-			fmt.Printf("run: Unable to setLightWithContext: %s\n", err)
-		}
+		time.Sleep(1 * time.Second)
 	}
 }
 
-// Set up the grok parser. New formats go here. Make sure to edit the loop under run() too.
-func configureParser(logtype string) (gr *grok.Grok, parser string, err error) {
-	gr, err = grok.NewWithConfig(&grok.Config{NamedCapturesOnly: true})
-	if err != nil {
-		return nil, "", err
-	}
-	gr.AddPattern("AMPM", "[AP][M]")
-	snitchFormat := "^%{MONTH:month} %{MONTHDAY:day}, %{YEAR:year} at %{HOUR:hour}:%{MINUTE:minute}:%{SECOND:second} %{AMPM:ampm}: %{WORD:devicetype} Device became %{WORD:onoff}: %{GREEDYDATA:device}$"
-	gr.AddPattern("SNITCHLOG", snitchFormat)
-
-	switch logtype {
-	case "microsnitch":
-		parser = "%{SNITCHLOG}"
-	default:
-		return nil, "", fmt.Errorf("Your specified a parser of %s which is invalid", logtype)
-	}
-	return gr, parser, nil
-}
-
-// configureLightSystem will... take the config vars and set up the lighting sytem. If you want
+// configureLightSystem will take the config vars and set up the lighting system. If you want
 // to add a lighting system, this is one of the places you'd need edit to do that.
 // Take a look at the hueConfig struct in hue.go - you'll want one of those for your lighting
 // system. You'll want to also set up the convenience commands too - ie. `hue init` `hue lights`
 // so that you can get the values you'd need for that struct. Finally, update setLightWithContext
 // below so that depending on system type, you send the right function for controlling the light.
-func configureLightSystem(c *cli.Context) (light lightConfig, err error) {
+func configureLightSystem(ctx context.Context, c *cli.Command) (light lightConfig, err error) {
 	switch c.String("system") {
 	case "hue":
 		// Get connected to the Hue bridge
 		bridge, err := loginHue(c.String("hueuid"), c.String("hueip"))
 		if err != nil {
-			return lightConfig{}, fmt.Errorf("Could not log into the Hue bridge: %s", err)
+			return lightConfig{}, fmt.Errorf("could not log into the Hue bridge: %s", err)
 		}
 
 		// Get our xy vals ready
 		activex, activey, err := parseXYval(c.String("hueactive"))
 		if err != nil {
-			return lightConfig{}, fmt.Errorf("Could not parse active xy value: %s", err)
+			return lightConfig{}, fmt.Errorf("could not parse active xy value: %s", err)
 		}
 
 		inactivex, inactivey, err := parseXYval(c.String("hueinactive"))
 		if err != nil {
-			return lightConfig{}, fmt.Errorf("Could not parse inactive xy value: %s", err)
+			return lightConfig{}, fmt.Errorf("could not parse inactive xy value: %s", err)
 		}
 
 		light = lightConfig{
@@ -154,18 +105,18 @@ func configureLightSystem(c *cli.Context) (light lightConfig, err error) {
 				Inactive:   []float32{inactivex, inactivey},
 			},
 		}
-        case "ifttt":
-	     light = lightConfig{
+	case "ifttt":
+		light = lightConfig{
 			System: "ifttt",
 			Parameters: iftttConfig{
-				key: c.String("ifttt-key"),
-				onairHook: c.String("ifttt-onair"),
+				key:        c.String("ifttt-key"),
+				onairHook:  c.String("ifttt-onair"),
 				offairHook: c.String("ifttt-offair"),
 			},
-	     }
+		}
 
 	default:
-		return lightConfig{}, fmt.Errorf("You specified a lighting system of %s which is invalid", c.String("system"))
+		return lightConfig{}, fmt.Errorf("you specified a lighting system of %s which is invalid", c.String("system"))
 	}
 	return light, nil
 }
@@ -178,20 +129,26 @@ func setLight(light lightConfig, computerListening bool) (err error) {
 		settings := light.Parameters.(hueConfig)
 		if computerListening {
 			err = setHueLights(settings.Bridge, settings.Light, settings.Active[0], settings.Active[1], settings.Brightness)
+			if err != nil {
+				fmt.Printf("could set hue lights: %s", err)
+			}
 		} else {
 			err = setHueLights(settings.Bridge, settings.Light, settings.Inactive[0], settings.Inactive[1], settings.Brightness)
+			if err != nil {
+				fmt.Printf("could set hue lights: %s", err)
+			}
 		}
-        case "ifttt":
-	     settings := light.Parameters.(iftttConfig)
-	     if computerListening {
-	     	err = invokeIFTTTHook(settings.key, settings.onairHook)
-	     } else {
-	        err = invokeIFTTTHook(settings.key, settings.offairHook)
-	     }
+	case "ifttt":
+		settings := light.Parameters.(iftttConfig)
+		if computerListening {
+			err = invokeIFTTTHook(settings.key, settings.onairHook)
+		} else {
+			err = invokeIFTTTHook(settings.key, settings.offairHook)
+		}
 
-	if err != nil {
-		return err
+		if err != nil {
+			return err
+		}
 	}
-        }
 	return nil
 }
